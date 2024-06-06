@@ -1,16 +1,53 @@
 import HeaderContainer from "@/components/global/HeaderContainer";
 import IconBtn from "@/components/global/IconBtn";
 import HistoryCard from "@/components/translate/HistoryCard/HistoryCard";
+import PlaceHolder from "@/components/translate/PlaceHolder/PlaceHolder";
 import { radiusBase } from "@/styles/base";
 import { bg, text } from "@/styles/colors";
+import { HistoryItem } from "@/types/translate/history";
+import { getAllHisObj } from "@/utils/localStore";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 
 const { height } = Dimensions.get("window");
 
 export default function HistoryView() {
+  const [hisArr, setHisArr] = useState<HistoryItem[]>([]);
+  const [isEmpty, setIsEmpty] = useState(false);
+
+  const initHisArr = async() => {
+    const jsonValue = await getAllHisObj();
+    if (jsonValue) {
+      setHisArr(JSON.parse(jsonValue));
+    }
+  }
+
+  useEffect(() => {
+    initHisArr();
+  }, [])
+
+  useEffect(() => {
+    if (!hisArr.length) {
+      setIsEmpty(true)
+    } else {
+      setIsEmpty(false);
+    }
+  }, [hisArr])
+
+  const hisLists = () => {
+    return hisArr.map((el, index) => {
+      return <HistoryCard
+      from={el.from}
+      to={el.to}
+      text={el.inputText}
+      translatedText={el.outputText}
+      soundStr={el.audio}></HistoryCard>
+    })
+  }
+
   return (
     <View className="flex h-full w-full" style={styles.pageContainer}>
       <StatusBar style="light" />
@@ -35,20 +72,8 @@ export default function HistoryView() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}>
           <View>
-            <HistoryCard
-              from="中文"
-              to="英文"
-              text="你好啊"
-              translatedText="Hi, there!"></HistoryCard>
-            <HistoryCard
-              from="中文"
-              to="英文"
-              text="你好啊确保组件已经渲染完成，否则可能无法获取正确的尺寸"
-              translatedText=" Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                Voluptate dolorem placeat soluta, veritatis ullam dicta
-                repudiandae. Necessitatibus veniam dolor dolores consequatur,
-                temporibus aliquid maxime repellendus cum iure, in ipsum optio!
-                Rerum modi earum quis impedit, veritatis commodi ad dolor"></HistoryCard>
+            {!isEmpty && hisLists()}
+            {isEmpty && <PlaceHolder></PlaceHolder>}
           </View>
         </ScrollView>
       </View>

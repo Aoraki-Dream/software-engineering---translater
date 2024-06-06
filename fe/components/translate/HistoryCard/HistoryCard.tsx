@@ -1,8 +1,10 @@
+import { getAudioUri } from "@/app/(translate)";
 import IconBtn from "@/components/global/IconBtn";
 import { radiusBaseSm } from "@/styles/base";
 import { bg, text as tColor } from "@/styles/colors";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
+import { Audio } from "expo-av";
+import { useEffect, useState } from "react";
 import { LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -18,7 +20,7 @@ interface HistoryCardProps {
   to?: string;
   text?: string;
   translatedText?: string;
-  soundUrl?: string;
+  soundStr?: string | null;
 }
 
 export default function HistoryCard({
@@ -26,11 +28,28 @@ export default function HistoryCard({
   to,
   text,
   translatedText,
-  soundUrl,
+  soundStr,
 }: HistoryCardProps) {
   const cardHeight = useSharedValue(DEFAULT_HEIGHT);
   const [actualHeight, setActualHeight] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  async function loadAudio(base64: string) {
+    const uri = await getAudioUri(base64);
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      setSound(sound);
+    } catch (e) {
+      console.error("输入音频载入失败", e);
+    }
+  }
+
+  useEffect(() => {
+    if (soundStr) {
+      loadAudio(soundStr)
+    }
+  }, [soundStr])
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -42,10 +61,15 @@ export default function HistoryCard({
     setActualHeight(event.nativeEvent.layout.height);
   }
 
-
   function handleToggle() {
     setExpanded(!expanded);
     cardHeight.value = expanded ? DEFAULT_HEIGHT : actualHeight;
+  }
+
+  function handleAudioPlay() {
+    if (sound) {
+      sound.replayAsync();
+    }
   }
 
   return (
@@ -55,7 +79,7 @@ export default function HistoryCard({
           <Text style={styles.langText}>
             {from} -{">"} {to}
           </Text>
-          <IconBtn style={styles.btn}>
+          <IconBtn style={styles.btn} onPress={handleAudioPlay}>
             <MaterialIcons name="volume-up" size={24} color={tColor.gray_800} />
           </IconBtn>
         </View>

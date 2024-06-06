@@ -3,6 +3,8 @@ import IconBtn from "@/components/global/IconBtn";
 import { useCurLangsStore } from "@/stores/curLangsStore";
 import { useSelectedImageStore } from "@/stores/selectedImage";
 import { bg, text } from "@/styles/colors";
+import { HistoryItem } from "@/types/translate/history";
+import { storeHisObj } from "@/utils/localStore";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as ImagePicker from "expo-image-picker";
@@ -146,6 +148,14 @@ export default function ToolsBar({setInputText, setOutputText, setIsLoading, loa
         if (res.TargetSpeechResponse.audio) {
           await loadAudio(res.TargetSpeechResponse.audio, false);
         }
+        const hisObj: HistoryItem = {
+          from: langs.from,
+          to: langs.to,
+          inputText: res.recognition_result,
+          outputText: res.translation_result,
+          audio: res.TargetSpeechResponse.audio,
+        }
+        await storeHisObj(hisObj);
       } catch (error) {
         console.error('Error uploading file:', error);
       }

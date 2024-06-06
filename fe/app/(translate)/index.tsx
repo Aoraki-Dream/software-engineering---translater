@@ -9,7 +9,9 @@ import { toastConfig } from "@/constants/toastConfig";
 import { useCurLangsStore } from "@/stores/curLangsStore";
 import { radiusBase } from "@/styles/base";
 import { bg, text } from "@/styles/colors";
+import { HistoryItem } from "@/types/translate/history";
 import { getAudioFileName } from "@/utils/audio";
+import { storeHisObj } from "@/utils/localStore";
 import { AntDesign, Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as Clipboard from "expo-clipboard";
@@ -120,6 +122,15 @@ export default function Index() {
       if (res.TargetSpeechResponse.audio) {
         await loadAudio(res.TargetSpeechResponse.audio, false);
       }
+      // 保存结果到本地
+      const hisItem: HistoryItem = {
+        from: langs.from,
+        to: langs.to,
+        inputText: inputText,
+        outputText: res.translation,
+        audio: res.TargetSpeechResponse.audio,
+      }
+      await storeHisObj(hisItem);
     } catch (err) {
       console.error(err);
     } finally {
