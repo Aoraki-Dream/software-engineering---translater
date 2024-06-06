@@ -37,7 +37,8 @@
     "react-native-screens": "~3.29.0",
     "react-native-vision-camera": "^4.0.5",
     "vision-camera-ocr": "^1.0.0",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "expo-sharing": "~11.10.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

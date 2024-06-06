@@ -5,6 +5,7 @@ import LangPicker from "@/components/global/LangPicker";
 import LoadingSkeleton from "@/components/global/LoadingSkeleton";
 import ToolsBar from "@/components/translate/ToolsBar/ToolsBar";
 import { langLabels } from "@/constants/langs";
+import { toastConfig } from "@/constants/toastConfig";
 import { useCurLangsStore } from "@/stores/curLangsStore";
 import { radiusBase } from "@/styles/base";
 import { bg, text } from "@/styles/colors";
@@ -14,6 +15,7 @@ import { Audio } from "expo-av";
 import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system";
 import { Link } from "expo-router";
+import * as Sharing from 'expo-sharing';
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -25,6 +27,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Toast from "react-native-root-toast";
 
 const { height } = Dimensions.get("window");
 
@@ -137,6 +140,19 @@ export default function Index() {
     }
   }
 
+  async function handleShare() {
+    const uri = `${FileSystem.cacheDirectory}tempOutputText.txt`;
+    await FileSystem.writeAsStringAsync(uri, outputText);
+
+    const isSharable = await Sharing.isAvailableAsync();
+
+    if (isSharable) {
+      await Sharing.shareAsync(uri);
+    } else {
+      Toast.show("分享取消", toastConfig.info);
+    }
+  }
+
   // 键盘关闭事件注册
   useEffect(() => {
     const keyboardHideListener = Keyboard.addListener(
@@ -230,7 +246,7 @@ export default function Index() {
                 <AntDesign name="sound" size={24} color={text.green_500} />
               </IconBtn>
               <IconBtn style={styles.iconBtn}>
-                <Entypo name="share" size={24} color={text.green_500} />
+                <Entypo name="share" size={24} color={text.green_500} onPress={handleShare} />
               </IconBtn>
             </View>
           </View>
