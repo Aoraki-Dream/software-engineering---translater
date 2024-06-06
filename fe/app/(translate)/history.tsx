@@ -2,15 +2,17 @@ import HeaderContainer from "@/components/global/HeaderContainer";
 import IconBtn from "@/components/global/IconBtn";
 import HistoryCard from "@/components/translate/HistoryCard/HistoryCard";
 import PlaceHolder from "@/components/translate/PlaceHolder/PlaceHolder";
+import { toastConfig } from "@/constants/toastConfig";
 import { radiusBase } from "@/styles/base";
 import { bg, text } from "@/styles/colors";
 import { HistoryItem } from "@/types/translate/history";
-import { getAllHisObj } from "@/utils/localStore";
+import { clearHisObj, getAllHisObj } from "@/utils/localStore";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import Toast from "react-native-root-toast";
 
 const { height } = Dimensions.get("window");
 
@@ -18,35 +20,47 @@ export default function HistoryView() {
   const [hisArr, setHisArr] = useState<HistoryItem[]>([]);
   const [isEmpty, setIsEmpty] = useState(false);
 
-  const initHisArr = async() => {
+  const initHisArr = async () => {
     const jsonValue = await getAllHisObj();
     if (jsonValue) {
       setHisArr(JSON.parse(jsonValue));
     }
-  }
+  };
 
   useEffect(() => {
     initHisArr();
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (!hisArr.length) {
-      setIsEmpty(true)
+      setIsEmpty(true);
     } else {
       setIsEmpty(false);
     }
-  }, [hisArr])
+  }, [hisArr]);
 
   const hisLists = () => {
     return hisArr.map((el, index) => {
-      return <HistoryCard
-      from={el.from}
-      to={el.to}
-      text={el.inputText}
-      translatedText={el.outputText}
-      soundStr={el.audio}></HistoryCard>
-    })
-  }
+      return (
+        <HistoryCard
+          from={el.from}
+          to={el.to}
+          text={el.inputText}
+          translatedText={el.outputText}
+          soundStr={el.audio}></HistoryCard>
+      );
+    });
+  };
+
+  const handleClearAll = async () => {
+    try {
+      await clearHisObj();
+      Toast.show("清除成功！", toastConfig.success);
+      setHisArr([]);
+    } catch (e) {
+      Toast.show("清除失败!", toastConfig.warning);
+    }
+  };
 
   return (
     <View className="flex h-full w-full" style={styles.pageContainer}>
@@ -63,7 +77,7 @@ export default function HistoryView() {
       </HeaderContainer>
       <View style={styles.bodyContainer}>
         <View className="flex-row justify-end mt-2 px-4">
-          <IconBtn>
+          <IconBtn onPress={handleClearAll}>
             <FontAwesome5 name="trash" size={24} color={bg.red_600} />
           </IconBtn>
         </View>

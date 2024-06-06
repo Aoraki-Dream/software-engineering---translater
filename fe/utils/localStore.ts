@@ -22,3 +22,11 @@ export const getAllHisObj = async () => {
     console.error(e);
   }
 };
+
+export const clearHisObj = async () => {
+  try {
+    await AsyncStorage.removeItem(HIS_KEY);
+  } catch (e) {
+    console.error(e);
+  }
+};
